@@ -1,4 +1,4 @@
-module lib
+module github.com/unix-streamdeck/lib
 
 go 1.14
 
