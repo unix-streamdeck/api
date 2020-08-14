@@ -2,33 +2,32 @@ package streamdeckd_dbus_lib
 
 import (
 	"encoding/json"
-	"errors"
-	"github.com/godbus/dbus/v5"
+	dbus "github.com/godbus/dbus/v5"
 )
 
-var busobj dbus.BusObject
-var conn *dbus.Conn
+type Connection struct {
+	busobj dbus.BusObject
+	conn *dbus.Conn
+}
 
-func InitDBUS() error {
-	var err error
-	conn, err = dbus.ConnectSessionBus()
+func Connect() (*Connection, error) {
+	conn, err := dbus.ConnectSessionBus()
 	if err != nil {
-		return err
+		return nil, err
 	}
-	busobj = conn.Object("com.thejonsey.streamdeckd", "/com/thejonsey/streamdeckd")
-	return nil
+	return &Connection{
+		conn: conn,
+		busobj: conn.Object("com.thejonsey.streamdeckd", "/com/thejonsey/streamdeckd"),
+	}, nil
 }
 
-func Close()  {
-	conn.Close()
+func (c *Connection) Close()  {
+	c.conn.Close()
 }
 
-func GetInfo() (*StreamDeckInfo, error) {
-	if busobj == nil {
-		return nil, errors.New("DBus not connected")
-	}
+func (c *Connection) GetInfo() (*StreamDeckInfo, error) {
 	var s string
-	err := busobj.Call("com.thejonsey.streamdeckd.GetDeckInfo", 0).Store(&s)
+	err := c.busobj.Call("com.thejonsey.streamdeckd.GetDeckInfo", 0).Store(&s)
 	if err != nil {
 		return nil, err
 	}
@@ -40,23 +39,17 @@ func GetInfo() (*StreamDeckInfo, error) {
 	return info, nil
 }
 
-func SetPage(page int) error {
-	if busobj == nil {
-		return errors.New("DBus not connected")
-	}
-	call := busobj.Call("com.thejonsey.streamdeckd.SetPage", 0, page)
+func (c *Connection) SetPage(page int) error {
+	call := c.busobj.Call("com.thejonsey.streamdeckd.SetPage", 0, page)
 	if call.Err != nil {
 		return call.Err
 	}
 	return nil
 }
 
-func GetConfig() (*Config, error) {
-	if busobj == nil {
-		return nil, errors.New("DBus not connected")
-	}
+func (c *Connection) GetConfig() (*Config, error) {
 	var s string
-	err := busobj.Call("com.thejonsey.streamdeckd.GetConfig", 0).Store(&s)
+	err := c.busobj.Call("com.thejonsey.streamdeckd.GetConfig", 0).Store(&s)
 	if err != nil {
 		return nil, err
 	}
@@ -68,51 +61,42 @@ func GetConfig() (*Config, error) {
 	return config, nil
 }
 
-func SetConfig(config *Config) error {
-	if busobj == nil {
-		return errors.New("DBus not connected")
-	}
+func (c *Connection) SetConfig(config *Config) error {
 	configString, err := json.Marshal(config)
 	if err != nil {
 		return err
 	}
-	call := busobj.Call("com.thejonsey.streamdeckd.SetConfig", 0, string(configString))
+	call := c.busobj.Call("com.thejonsey.streamdeckd.SetConfig", 0, string(configString))
 	if call.Err != nil {
 		return call.Err
 	}
 	return nil
 }
 
-func ReloadConfig() error {
-	if busobj == nil {
-		return errors.New("DBus not connected")
-	}
-	call := busobj.Call("com.thejonsey.streamdeckd.ReloadConfig", 0)
+func (c *Connection) ReloadConfig() error {
+	call := c.busobj.Call("com.thejonsey.streamdeckd.ReloadConfig", 0)
 	if call.Err != nil {
 		return call.Err
 	}
 	return nil
 }
 
-func CommitConfig() error {
-	if busobj == nil {
-		return errors.New("DBus not connected")
-	}
-	call := busobj.Call("com.thejonsey.streamdeckd.CommitConfig", 0)
+func (c *Connection) CommitConfig() error {
+	call := c.busobj.Call("com.thejonsey.streamdeckd.CommitConfig", 0)
 	if call.Err != nil {
 		return call.Err
 	}
 	return nil
 }
 
-func RegisterPageListener(cback func(int32)) error {
-	err := conn.AddMatchSignal(dbus.WithMatchObjectPath("/com/thejonsey/streamdeckd"), dbus.WithMatchInterface("com.thejonsey.streamdeckd"), dbus.WithMatchMember("Page"))
+func (c *Connection) RegisterPageListener(cback func(int32)) error {
+	err := c.conn.AddMatchSignal(dbus.WithMatchObjectPath("/com/thejonsey/streamdeckd"), dbus.WithMatchInterface("com.thejonsey.streamdeckd"), dbus.WithMatchMember("Page"))
 	if err != nil {
 		return err
 	}
-	c := make(chan *dbus.Signal, 10)
-	conn.Signal(c)
-	for v := range c {
+	ch := make(chan *dbus.Signal, 10)
+	c.conn.Signal(ch)
+	for v := range ch {
 		cback(v.Body[0].(int32))
 	}
 	return nil
