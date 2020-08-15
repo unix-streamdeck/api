@@ -1,4 +1,4 @@
-module github.com/unix-streamdeck/lib
+module github.com/unix-streamdeck/dbus
 
 go 1.14
 

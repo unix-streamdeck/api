@@ -23,4 +23,9 @@ type Key struct {
 	Url        string `json:"url,omitempty"`
 	IconHandler    string `json:"icon_handler,omitempty"`
 	KeyHandler string `json:"key_handler,omitempty"`
+	Additional *AdditionalConfig
+}
+
+type AdditionalConfig interface {
+
 }
