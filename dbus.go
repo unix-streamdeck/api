@@ -1,4 +1,4 @@
-package streamdeckd_dbus_lib
+package dbus
 
 import (
 	"encoding/json"

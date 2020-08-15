@@ -1,4 +1,4 @@
-package streamdeckd_dbus_lib
+package dbus
 
 type StreamDeckInfo struct {
 	Cols int `json:"cols,omitempty"`
