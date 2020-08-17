@@ -1,4 +1,4 @@
-package driver
+package api
 
 import (
 	"github.com/unix-streamdeck/driver"
