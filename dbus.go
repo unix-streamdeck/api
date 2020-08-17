@@ -1,8 +1,8 @@
-package dbus
+package driver
 
 import (
 	"encoding/json"
-	dbus "github.com/godbus/dbus/v5"
+	"github.com/godbus/dbus/v5"
 )
 
 type Connection struct {
@@ -17,7 +17,7 @@ func Connect() (*Connection, error) {
 	}
 	return &Connection{
 		conn: conn,
-		busobj: conn.Object("com.thejonsey.streamdeckd", "/com/thejonsey/streamdeckd"),
+		busobj: conn.Object("com.unixstreamdeck.streamdeckd", "/com/unixstreamdeck/streamdeckd"),
 	}, nil
 }
 
@@ -27,7 +27,7 @@ func (c *Connection) Close()  {
 
 func (c *Connection) GetInfo() (*StreamDeckInfo, error) {
 	var s string
-	err := c.busobj.Call("com.thejonsey.streamdeckd.GetDeckInfo", 0).Store(&s)
+	err := c.busobj.Call("com.unixstreamdeck.streamdeckd.GetDeckInfo", 0).Store(&s)
 	if err != nil {
 		return nil, err
 	}
@@ -40,7 +40,7 @@ func (c *Connection) GetInfo() (*StreamDeckInfo, error) {
 }
 
 func (c *Connection) SetPage(page int) error {
-	call := c.busobj.Call("com.thejonsey.streamdeckd.SetPage", 0, page)
+	call := c.busobj.Call("com.unixstreamdeck.streamdeckd.SetPage", 0, page)
 	if call.Err != nil {
 		return call.Err
 	}
@@ -49,7 +49,7 @@ func (c *Connection) SetPage(page int) error {
 
 func (c *Connection) GetConfig() (*Config, error) {
 	var s string
-	err := c.busobj.Call("com.thejonsey.streamdeckd.GetConfig", 0).Store(&s)
+	err := c.busobj.Call("com.unixstreamdeck.streamdeckd.GetConfig", 0).Store(&s)
 	if err != nil {
 		return nil, err
 	}
@@ -66,7 +66,7 @@ func (c *Connection) SetConfig(config *Config) error {
 	if err != nil {
 		return err
 	}
-	call := c.busobj.Call("com.thejonsey.streamdeckd.SetConfig", 0, string(configString))
+	call := c.busobj.Call("com.unixstreamdeck.streamdeckd.SetConfig", 0, string(configString))
 	if call.Err != nil {
 		return call.Err
 	}
@@ -74,7 +74,7 @@ func (c *Connection) SetConfig(config *Config) error {
 }
 
 func (c *Connection) ReloadConfig() error {
-	call := c.busobj.Call("com.thejonsey.streamdeckd.ReloadConfig", 0)
+	call := c.busobj.Call("com.unixstreamdeck.streamdeckd.ReloadConfig", 0)
 	if call.Err != nil {
 		return call.Err
 	}
@@ -82,7 +82,7 @@ func (c *Connection) ReloadConfig() error {
 }
 
 func (c *Connection) CommitConfig() error {
-	call := c.busobj.Call("com.thejonsey.streamdeckd.CommitConfig", 0)
+	call := c.busobj.Call("com.unixstreamdeck.streamdeckd.CommitConfig", 0)
 	if call.Err != nil {
 		return call.Err
 	}
@@ -90,7 +90,7 @@ func (c *Connection) CommitConfig() error {
 }
 
 func (c *Connection) RegisterPageListener(cback func(int32)) error {
-	err := c.conn.AddMatchSignal(dbus.WithMatchObjectPath("/com/thejonsey/streamdeckd"), dbus.WithMatchInterface("com.thejonsey.streamdeckd"), dbus.WithMatchMember("Page"))
+	err := c.conn.AddMatchSignal(dbus.WithMatchObjectPath("/com/unixstreamdeck/streamdeckd"), dbus.WithMatchInterface("com.unixstreamdeck.streamdeckd"), dbus.WithMatchMember("Page"))
 	if err != nil {
 		return err
 	}

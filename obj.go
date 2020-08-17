@@ -1,4 +1,6 @@
-package dbus
+package driver
+
+import "image"
 
 type StreamDeckInfo struct {
 	Cols int `json:"cols,omitempty"`
@@ -23,9 +25,7 @@ type Key struct {
 	Url        string `json:"url,omitempty"`
 	IconHandler    string `json:"icon_handler,omitempty"`
 	KeyHandler string `json:"key_handler,omitempty"`
-	Additional AdditionalConfig
-}
-
-type AdditionalConfig interface {
-
+	Buff image.Image `json:"-"`
+	IconHandlerStruct IconHandler `json:"-"`
+	KeyHandlerStruct KeyHandler `json:"-"`
 }
