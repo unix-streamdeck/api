@@ -17,11 +17,11 @@ type Config struct {
 
 type Key struct {
 	Icon       string `json:"icon,omitempty"`
-	SwitchPage *int   `json:"switch_page,omitempty"`
+	SwitchPage int   `json:"switch_page,omitempty"`
 	Text       string `json:"text,omitempty"`
 	Keybind    string `json:"keybind,omitempty"`
 	Command    string `json:"command,omitempty"`
-	Brightness *int   `json:"brightness,omitempty"`
+	Brightness int   `json:"brightness,omitempty"`
 	Url        string `json:"url,omitempty"`
 	IconHandler    string `json:"icon_handler,omitempty"`
 	KeyHandler string `json:"key_handler,omitempty"`
