@@ -3,7 +3,9 @@ package api
 import "image"
 
 type IconHandler interface {
-	Icon(key Key, info StreamDeckInfo, callback func(image image.Image))
+	Start(key Key, info StreamDeckInfo, callback func(image image.Image))
+	IsRunning() bool
+	SetRunning(running bool)
 	Stop()
 }
 
