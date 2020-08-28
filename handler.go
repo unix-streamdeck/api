@@ -1,14 +1,14 @@
 package api
 
-import (
-	"github.com/unix-streamdeck/driver"
-)
+import "image"
 
 type IconHandler interface {
-	Icon(page int, index int, key *Key, dev streamdeck.Device)
+	Start(key Key, info StreamDeckInfo, callback func(image image.Image))
+	IsRunning() bool
+	SetRunning(running bool)
 	Stop()
 }
 
 type KeyHandler interface {
-	Key(page int, index int, key *Key, dev streamdeck.Device)
+	Key(key Key, info StreamDeckInfo)
 }
