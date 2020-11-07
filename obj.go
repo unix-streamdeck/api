@@ -19,6 +19,8 @@ type Key struct {
 	Icon       string `json:"icon,omitempty"`
 	SwitchPage int   `json:"switch_page,omitempty"`
 	Text       string `json:"text,omitempty"`
+	TextSize	int	`json:"text_size,omitempty"`
+	TextAlignment string `json:"text_alignment,omitempty"`
 	Keybind    string `json:"keybind,omitempty"`
 	Command    string `json:"command,omitempty"`
 	Brightness int   `json:"brightness,omitempty"`

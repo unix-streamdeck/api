@@ -1,16 +1,16 @@
 package api
 
 import (
+	"errors"
 	"github.com/fogleman/gg"
 	"github.com/golang/freetype/truetype"
 	"github.com/nfnt/resize"
 	"golang.org/x/image/font/gofont/goregular"
 	"image"
 	"strings"
-
 )
 
-func DrawText(currentImage image.Image, text string) (image.Image, error) {
+func DrawText(currentImage image.Image, text string, fontSize int, fontAlignment string) (image.Image, error) {
 	width, height := currentImage.Bounds().Max.X, currentImage.Bounds().Max.Y
 	img := gg.NewContextForImage(currentImage)
 	img.SetRGB(1,1,1)
@@ -19,12 +19,31 @@ func DrawText(currentImage image.Image, text string) (image.Image, error) {
 		return nil, err
 	}
 	fSize, wrapped := calculateFontSize(f, text, img)
+	if fontSize != 0 {
+		fSize = float64(fontSize)
+	}
 	face := truetype.NewFace(f, &truetype.Options{Size: fSize})
 	img.SetFontFace(face)
-	if wrapped {
-		img.DrawStringWrapped(text, float64(width-5)/2, float64(height-5)/2, 0.5, 0.5, float64(width-10), 1, gg.AlignCenter)
+	if fontAlignment == "" {
+		if wrapped {
+			img.DrawStringWrapped(text, float64(width-5)/2, float64(height-5)/2, 0.5, 0.5, float64(width-10), 1, gg.AlignCenter)
+		} else {
+			img.DrawStringAnchored(text, float64(width-5)/2, float64(height-5)/2, 0.5, 0.5)
+		}
 	} else {
-		img.DrawStringAnchored(text, float64(width-5)/2, float64(height-5)/2, 0.5, 0.5)
+		verticalAlignment := 0.5
+		y := float64(height-5)/2
+		if strings.ToUpper(fontAlignment) == "TOP" {
+			verticalAlignment = 0.0
+			y = (fSize / 2) + 10
+		} else if strings.ToUpper(fontAlignment) == "BOTTOM" {
+			verticalAlignment = 1.0
+			y = float64(height - 5) - fSize
+		} else if strings.ToUpper(fontAlignment) != "MIDDLE" {
+			return nil, errors.New("Invalid vertical alignment")
+		}
+
+		img.DrawStringAnchored(text, float64(width-5)/2, y, 0.5, verticalAlignment)
 	}
 	return img.Image(), nil
 }
