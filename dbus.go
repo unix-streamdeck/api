@@ -89,6 +89,20 @@ func (c *Connection) CommitConfig() error {
 	return nil
 }
 
+func (c *Connection) GetModules() (*[]Module, error) {
+	var s string
+	err := c.busobj.Call("com.unixstreamdeck.streamdeckd.GetModules", 0).Store(&s)
+	if err != nil {
+		return nil, err
+	}
+	var modules *[]Module
+	err = json.Unmarshal([]byte(s), &modules)
+	if err != nil {
+		return nil, err
+	}
+	return modules, nil
+}
+
 func (c *Connection) RegisterPageListener(cback func(int32)) error {
 	err := c.conn.AddMatchSignal(dbus.WithMatchObjectPath("/com/unixstreamdeck/streamdeckd"), dbus.WithMatchInterface("com.unixstreamdeck.streamdeckd"), dbus.WithMatchMember("Page"))
 	if err != nil {
