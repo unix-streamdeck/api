@@ -89,13 +89,13 @@ func (c *Connection) CommitConfig() error {
 	return nil
 }
 
-func (c *Connection) GetModules() (*[]Module, error) {
+func (c *Connection) GetModules() ([]*Module, error) {
 	var s string
 	err := c.busobj.Call("com.unixstreamdeck.streamdeckd.GetModules", 0).Store(&s)
 	if err != nil {
 		return nil, err
 	}
-	var modules *[]Module
+	var modules []*Module
 	err = json.Unmarshal([]byte(s), &modules)
 	if err != nil {
 		return nil, err
