@@ -25,13 +25,13 @@ func (c *Connection) Close()  {
 	c.conn.Close()
 }
 
-func (c *Connection) GetInfo() (*StreamDeckInfo, error) {
+func (c *Connection) GetInfo() ([]*StreamDeckInfo, error) {
 	var s string
 	err := c.busobj.Call("com.unixstreamdeck.streamdeckd.GetDeckInfo", 0).Store(&s)
 	if err != nil {
 		return nil, err
 	}
-	var info *StreamDeckInfo
+	var info []*StreamDeckInfo
 	err = json.Unmarshal([]byte(s), &info)
 	if err != nil {
 		return nil, err
@@ -39,8 +39,8 @@ func (c *Connection) GetInfo() (*StreamDeckInfo, error) {
 	return info, nil
 }
 
-func (c *Connection) SetPage(page int) error {
-	call := c.busobj.Call("com.unixstreamdeck.streamdeckd.SetPage", 0, page)
+func (c *Connection) SetPage(serial string, page int) error {
+	call := c.busobj.Call("com.unixstreamdeck.streamdeckd.SetPage", 0, serial, page)
 	if call.Err != nil {
 		return call.Err
 	}
@@ -103,7 +103,7 @@ func (c *Connection) GetModules() ([]*Module, error) {
 	return modules, nil
 }
 
-func (c *Connection) RegisterPageListener(cback func(int32)) error {
+func (c *Connection) RegisterPageListener(cback func(string, int32)) error {
 	err := c.conn.AddMatchSignal(dbus.WithMatchObjectPath("/com/unixstreamdeck/streamdeckd"), dbus.WithMatchInterface("com.unixstreamdeck.streamdeckd"), dbus.WithMatchMember("Page"))
 	if err != nil {
 		return err
@@ -111,7 +111,7 @@ func (c *Connection) RegisterPageListener(cback func(int32)) error {
 	ch := make(chan *dbus.Signal, 10)
 	c.conn.Signal(ch)
 	for v := range ch {
-		cback(v.Body[0].(int32))
+		cback(v.Body[0].(string), v.Body[1].(int32))
 	}
 	return nil
 }

@@ -7,13 +7,19 @@ type StreamDeckInfo struct {
 	Rows int `json:"rows,omitempty"`
 	IconSize int `json:"icon_size,omitempty"`
 	Page int `json:"page"`
+	Serial string `json:"serial,omitempty"`
 }
 
 type Page []Key
 
+type Deck struct {
+	Serial string `json:"serial"`
+	Pages []Page `json:"pages"`
+}
+
 type Config struct {
 	Modules []string `json:"modules,omitempty"`
-	Pages []Page `json:"pages"`
+	Decks []Deck `json:"decks"`
 }
 
 type Key struct {
@@ -50,3 +56,4 @@ type Field struct {
 	Type string
 	FileTypes []string
 }
+
