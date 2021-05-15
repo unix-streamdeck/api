@@ -22,6 +22,11 @@ type Config struct {
 	Decks []Deck `json:"decks"`
 }
 
+type DepracatedConfig struct {
+	Modules []string `json:"modules,omitempty"`
+	Pages []Page `json:"pages"`
+}
+
 type Key struct {
 	Icon       string `json:"icon,omitempty"`
 	SwitchPage int   `json:"switch_page,omitempty"`
