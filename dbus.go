@@ -104,7 +104,7 @@ func (c *Connection) GetModules() ([]*Module, error) {
 }
 
 func (c *Connection) PressButton(serial string, keyIndex int) error  {
-	return c.busobj.Call("com.unixstreamdeck.streamdeckd.PressBUtton", 0, serial, keyIndex).Err
+	return c.busobj.Call("com.unixstreamdeck.streamdeckd.PressButton", 0, serial, keyIndex).Err
 }
 
 func (c *Connection) RegisterPageListener(cback func(string, int32)) error {
