@@ -103,6 +103,10 @@ func (c *Connection) GetModules() ([]*Module, error) {
 	return modules, nil
 }
 
+func (c *Connection) PressButton(serial string, keyIndex int) error  {
+	return c.busobj.Call("com.unixstreamdeck.streamdeckd.PressBUtton", 0, serial, keyIndex).Err
+}
+
 func (c *Connection) RegisterPageListener(cback func(string, int32)) error {
 	err := c.conn.AddMatchSignal(dbus.WithMatchObjectPath("/com/unixstreamdeck/streamdeckd"), dbus.WithMatchInterface("com.unixstreamdeck.streamdeckd"), dbus.WithMatchMember("Page"))
 	if err != nil {
