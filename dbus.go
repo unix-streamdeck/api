@@ -1,10 +1,14 @@
 package api
 
 import (
+	"bytes"
 	"encoding/json"
 	"github.com/godbus/dbus/v5"
+	"image"
+	"image/png"
+	"encoding/base64"
+	"strings"
 )
-
 type Connection struct {
 	busobj dbus.BusObject
 	conn *dbus.Conn
@@ -105,6 +109,25 @@ func (c *Connection) GetModules() ([]*Module, error) {
 
 func (c *Connection) PressButton(serial string, keyIndex int) error  {
 	return c.busobj.Call("com.unixstreamdeck.streamdeckd.PressButton", 0, serial, keyIndex).Err
+}
+
+func (c *Connection) GetHandlerExample(serial string, key Key) (image.Image, error) {
+	keyString, err := json.Marshal(key)
+	if err != nil {
+		return nil, err
+	}
+	var s string
+	err = c.busobj.Call("com.unixstreamdeck.streamdeckd.GetHandlerExample", 0, serial, string(keyString)).Store(&s)
+	if err != nil {
+		return nil, err
+	}
+	imgData := s[strings.IndexByte(s, ',')+1:]
+	decodedImgData, err := base64.StdEncoding.DecodeString(imgData)
+	if err != nil {
+		return nil, err
+	}
+	reader := bytes.NewReader(decodedImgData)
+	return png.Decode(reader)
 }
 
 func (c *Connection) RegisterPageListener(cback func(string, int32)) error {
