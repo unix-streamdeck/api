@@ -60,5 +60,6 @@ type Field struct {
 	Name string
 	Type string
 	FileTypes []string
+	Values []string
 }
 
