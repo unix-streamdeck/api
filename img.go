@@ -88,3 +88,7 @@ func calculateFontSize(f *truetype.Font, text string, img *gg.Context) float64 {
 func ResizeImage(img image.Image, keySize int) image.Image {
 	return resize.Resize(uint(keySize), uint(keySize), img, resize.Lanczos3)
 }
+
+func ResizeImageWH(img image.Image, width int, height int) image.Image {
+	return resize.Resize(uint(width), uint(height), img, resize.Lanczos3)
+}
