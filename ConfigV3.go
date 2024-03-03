@@ -42,35 +42,35 @@ type KeyConfigV3 struct {
     Command           string            `json:"command,omitempty"`
     Brightness        int               `json:"brightness,omitempty"`
     Url               string            `json:"url,omitempty"`
+    KeyHold           int               `json:"key_hold,omitempty"`
     ObsCommand        string            `json:"obs_command,omitempty"`
     ObsCommandParams  map[string]string `json:"obs_command_params,omitempty"`
     IconHandler       string            `json:"icon_handler,omitempty"`
     KeyHandler        string            `json:"key_handler,omitempty"`
-    IconHandlerFields map[string]string `json:"icon_handler_fields,omitempty"`
-    KeyHandlerFields  map[string]string `json:"key_handler_fields,omitempty"`
+    IconHandlerFields map[string]any    `json:"icon_handler_fields,omitempty"`
+    KeyHandlerFields  map[string]any    `json:"key_handler_fields,omitempty"`
     Buff              image.Image       `json:"-"`
     IconHandlerStruct IconHandler       `json:"-"`
     KeyHandlerStruct  KeyHandler        `json:"-"`
 }
 type KnobConfigV3 struct {
-    Icon               string      `json:"icon,omitempty"`
-    Text               string      `json:"text,omitempty"`
-    TextSize           int         `json:"text_size,omitempty"`
-    TextAlignment      string      `json:"text_alignment,omitempty"`
-    LcdHandler         string `json:"lcd_handler,omitempty"`
-    KnobOrTouchHandler string `json:"knob_or_touch_handler,omitempty"`
-    Buff               image.Image `json:"-"`
-    LcdHandlerStruct LcdHandler `json:"-"`
+    Icon                     string             `json:"icon,omitempty"`
+    Text                     string             `json:"text,omitempty"`
+    TextSize                 int                `json:"text_size,omitempty"`
+    TextAlignment            string             `json:"text_alignment,omitempty"`
+    LcdHandler               string             `json:"lcd_handler,omitempty"`
+    KnobOrTouchHandler       string             `json:"knob_or_touch_handler,omitempty"`
+    Buff                     image.Image        `json:"-"`
+    LcdHandlerStruct         LcdHandler         `json:"-"`
     KnobOrTouchHandlerStruct KnobOrTouchHandler `json:"-"`
-    LcdHandlerFields map[string]string `json:"lcd_handler_fields,omitempty"`
-    KnobOrTouchHandlerFields  map[string]string `json:"knob_or_touch_handler_fields,omitempty"`
+    LcdHandlerFields         map[string]any     `json:"lcd_handler_fields,omitempty"`
+    KnobOrTouchHandlerFields map[string]any     `json:"knob_or_touch_handler_fields,omitempty"`
+    KnobPressAction KnobActionV3 `json:"knob_press_action,omitempty"`
+    KnobTurnUpAction KnobActionV3 `json:"knob_turn_up_action,omitempty"`
+    KnobTurnDownAction KnobActionV3 `json:"knob_turn_down_action,omitempty"`
 }
 
-type KnobMoveActionV3 struct {
-    Command string `json:"command,omitempty"`
-}
-
-type KnobPressActionV3 struct {
+type KnobActionV3 struct {
     SwitchPage       int               `json:"switch_page,omitempty"`
     Keybind          string            `json:"keybind,omitempty"`
     Command          string            `json:"command,omitempty"`
