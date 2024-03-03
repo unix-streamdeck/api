@@ -1,6 +1,6 @@
 module github.com/unix-streamdeck/api
 
-go 1.14
+go 1.18
 
 require (
 	github.com/fogleman/gg v1.3.0
