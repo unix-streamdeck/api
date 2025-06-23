@@ -1,4 +1,4 @@
-module github.com/unix-streamdeck/api
+module github.com/unix-streamdeck/api/v2
 
 go 1.18
 
