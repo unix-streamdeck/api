@@ -4,7 +4,7 @@ import (
     "github.com/godbus/dbus/v5"
     "github.com/stretchr/testify/assert"
     "github.com/stretchr/testify/mock"
-    "github.com/unix-streamdeck/api/mocks"
+    "github.com/unix-streamdeck/api/v2/mocks"
     "image"
     "testing"
     "time"
