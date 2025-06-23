@@ -71,7 +71,7 @@ func TestConnection_GetConfig(t *testing.T) {
 
     conn := Connection{busobj: mockBusObj}
 
-    body := "{\"decks\": [{\"serial\": \"ABCD1234\", \"pages\": [[{\"application\": {\"\": {\"icon\": \"example.png\", \"command\": \"notify-send 'Hello World'\"}}}]]}]}"
+    body := "{\"decks\": [{\"serial\": \"ABCD1234\", \"pages\": [{\"keys\": [{\"application\": {\"\": {\"icon\": \"example.png\", \"command\": \"notify-send 'Hello World'\"}}}]}]}]}"
 
     y := make([]interface{}, 1)
 
@@ -87,12 +87,14 @@ func TestConnection_GetConfig(t *testing.T) {
         Decks: []DeckV3{
             {
                 Serial: "ABCD1234", Pages: []PageV3{
-                []KeyV3{
-                    {
-                        Application: map[string]*KeyConfigV3{
-                            "": {
-                                Icon:    "example.png",
-                                Command: "notify-send 'Hello World'",
+                {
+                    Keys: []KeyV3{
+                        {
+                            Application: map[string]*KeyConfigV3{
+                                "": {
+                                    Icon:    "example.png",
+                                    Command: "notify-send 'Hello World'",
+                                },
                             },
                         },
                     },
@@ -116,12 +118,14 @@ func TestConnection_SetConfig(t *testing.T) {
         Decks: []DeckV3{
             {
                 Serial: "ABCD1234", Pages: []PageV3{
-                []KeyV3{
-                    {
-                        Application: map[string]*KeyConfigV3{
-                            "": {
-                                Icon:    "example.png",
-                                Command: "notify-send 'Hello World'",
+                {
+                    Keys: []KeyV3{
+                        {
+                            Application: map[string]*KeyConfigV3{
+                                "": {
+                                    Icon:    "example.png",
+                                    Command: "notify-send 'Hello World'",
+                                },
                             },
                         },
                     },
@@ -130,7 +134,7 @@ func TestConnection_SetConfig(t *testing.T) {
         },
     }
 
-    mockBusObj.On("Call", "com.unixstreamdeck.streamdeckd.SetConfig", dbus.Flags(0), "{\"decks\":[{\"serial\":\"ABCD1234\",\"pages\":[[{\"application\":{\"\":{\"icon\":\"example.png\",\"command\":\"notify-send 'Hello World'\"}}}]]}],\"obs_connection_info\":{}}").Return(&dbus.Call{})
+    mockBusObj.On("Call", "com.unixstreamdeck.streamdeckd.SetConfig", dbus.Flags(0), "{\"decks\":[{\"serial\":\"ABCD1234\",\"pages\":[{\"keys\":[{\"application\":{\"\":{\"icon\":\"example.png\",\"command\":\"notify-send 'Hello World'\"}}}],\"knobs\":null}]}],\"obs_connection_info\":{}}").Return(&dbus.Call{})
 
     err := conn.SetConfig(conf)
 
