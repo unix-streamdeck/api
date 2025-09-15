@@ -3,7 +3,6 @@ package api
 import "image"
 
 type Handler interface {
-
 }
 
 type IconHandler interface {

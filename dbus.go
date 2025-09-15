@@ -33,7 +33,7 @@ func (c *Conn) Signal(ch chan<- *dbus.Signal) {
 
 type Connection struct {
 	busobj dbus.BusObject
-	conn IConn
+	conn   IConn
 }
 
 func Connect() (*Connection, error) {
@@ -42,12 +42,12 @@ func Connect() (*Connection, error) {
 		return nil, err
 	}
 	return &Connection{
-		conn: &Conn{conn: conn},
+		conn:   &Conn{conn: conn},
 		busobj: conn.Object("com.unixstreamdeck.streamdeckd", "/com/unixstreamdeck/streamdeckd"),
 	}, nil
 }
 
-func (c *Connection) Close()  {
+func (c *Connection) Close() {
 	c.conn.Close()
 }
 
@@ -129,7 +129,7 @@ func (c *Connection) GetModules() ([]*Module, error) {
 	return modules, nil
 }
 
-func (c *Connection) PressButton(serial string, keyIndex int) error  {
+func (c *Connection) PressButton(serial string, keyIndex int) error {
 	return c.busobj.Call("com.unixstreamdeck.streamdeckd.PressButton", 0, serial, keyIndex).Err
 }
 
@@ -154,6 +154,23 @@ func (c *Connection) GetHandlerExample(serial string, keyConfig KeyConfigV3) (im
 	}
 	var s string
 	err = c.busobj.Call("com.unixstreamdeck.streamdeckd.GetHandlerExample", 0, string(serial), string(configString)).Store(&s)
+	if err != nil {
+		return nil, err
+	}
+	s = strings.ReplaceAll(s, "data:image/png;base64,", "")
+	bytes, err := base64.StdEncoding.DecodeString(s)
+	if err != nil {
+		return nil, err
+	}
+	return png.Decode(strings.NewReader(string(bytes)))
+}
+func (c *Connection) GetKnobHandlerExample(serial string, knobConfig KnobConfigV3) (image.Image, error) {
+	configString, err := json.Marshal(knobConfig)
+	if err != nil {
+		return nil, err
+	}
+	var s string
+	err = c.busobj.Call("com.unixstreamdeck.streamdeckd.GetKnobHandlerExample", 0, string(serial), string(configString)).Store(&s)
 	if err != nil {
 		return nil, err
 	}
