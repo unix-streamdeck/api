@@ -30,7 +30,7 @@ func DrawText(currentImage image.Image, text string, fontSize int, fontAlignment
 	if strings.Contains(text, "\n") {
 		lineCount = float64(strings.Count(text, "\n") + 1)
 	} else {
-		lines := img.WordWrap(text, float64(width - 10))
+		lines := img.WordWrap(text, float64(width-10))
 		lineCount = float64(len(lines))
 	}
 
@@ -38,7 +38,7 @@ func DrawText(currentImage image.Image, text string, fontSize int, fontAlignment
 	y := float64(height-5) / 2
 	if strings.ToUpper(fontAlignment) == "TOP" {
 		verticalAlignment = 1.0
-		y = (fSize / 2) * lineCount + 10 * lineCount
+		y = (fSize/2)*lineCount + 10*lineCount
 	} else if strings.ToUpper(fontAlignment) == "BOTTOM" {
 		verticalAlignment = 0.0
 		y = float64(height-5) - (fSize * lineCount)
