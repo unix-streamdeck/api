@@ -1,3 +1,6 @@
+# github.com/bendahl/uinput v1.7.0
+## explicit; go 1.13
+github.com/bendahl/uinput
 # github.com/fogleman/gg v1.3.0
 ## explicit
 github.com/fogleman/gg
