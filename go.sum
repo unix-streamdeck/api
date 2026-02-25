@@ -1,3 +1,5 @@
+github.com/bendahl/uinput v1.7.0 h1:nA4fm8Wu8UYNOPykIZm66nkWEyvxzfmJ8YC02PM40jg=
+github.com/bendahl/uinput v1.7.0/go.mod h1:Np7w3DINc9wB83p12fTAM3DPPhFnAKP0WTXRqCQJ6Z8=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/fogleman/gg v1.3.0 h1:/7zJX8F6AaYQc57WQCyN9cAIz+4bCJGO9B+dyW29am8=
