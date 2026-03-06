@@ -38,6 +38,8 @@ type KeyConfigV3 struct {
 	Text                string            `json:"text,omitempty"`
 	TextSize            int               `json:"text_size,omitempty"`
 	TextAlignment       string            `json:"text_alignment,omitempty"`
+	FontFace            string            `json:"font_face,omitempty"`
+	TextColour          string            `json:"text_colour,omitempty"`
 	Keybind             string            `json:"keybind,omitempty"`
 	Command             string            `json:"command,omitempty"`
 	Brightness          int               `json:"brightness,omitempty"`
@@ -61,6 +63,8 @@ type KnobConfigV3 struct {
 	Text                     string             `json:"text,omitempty"`
 	TextSize                 int                `json:"text_size,omitempty"`
 	TextAlignment            string             `json:"text_alignment,omitempty"`
+	FontFace                 string             `json:"font_face,omitempty"`
+	TextColour               string             `json:"text_colour,omitempty"`
 	LcdHandler               string             `json:"lcd_handler,omitempty"`
 	KnobOrTouchHandler       string             `json:"knob_or_touch_handler,omitempty"`
 	Buff                     image.Image        `json:"-"`
