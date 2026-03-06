@@ -1,13 +1,14 @@
 package api
 
 import (
+	"image"
+	"log"
+	"strings"
+
 	"github.com/fogleman/gg"
 	"github.com/golang/freetype/truetype"
 	"github.com/nfnt/resize"
 	"golang.org/x/image/font/gofont/goregular"
-	"image"
-	"log"
-	"strings"
 )
 
 func DrawText(currentImage image.Image, text string, fontSize int, fontAlignment string) (image.Image, error) {
