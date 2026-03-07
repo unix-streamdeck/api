@@ -1,6 +1,9 @@
 package api
 
-import "image"
+import (
+	"image"
+	"time"
+)
 
 type ConfigV3 struct {
 	Modules           []string            `json:"modules,omitempty"`
@@ -87,4 +90,25 @@ type KnobActionV3 struct {
 	Url              string            `json:"url,omitempty"`
 	ObsCommand       string            `json:"obs_command,omitempty"`
 	ObsCommandParams map[string]string `json:"obs_command_params,omitempty"`
+}
+
+type StreamDeckInfoV1 struct {
+	Cols             int       `json:"cols,omitempty"`
+	Rows             int       `json:"rows,omitempty"`
+	IconSize         int       `json:"icon_size,omitempty"`
+	Page             int       `json:"page"`
+	Serial           string    `json:"serial,omitempty"`
+	Name             string    `json:"name,omitempty"`
+	Connected        bool      `json:"connected"`
+	LastConnected    time.Time `json:"last_connected,omitempty"`
+	LastDisconnected time.Time `json:"last_disconnected,omitempty"`
+	LcdWidth         int       `json:"lcd_width,omitempty"`
+	LcdHeight        int       `json:"lcd_height,omitempty"`
+	LcdCols          int       `json:"lcd_cols,omitempty"`
+	KnobCols         int       `json:"knob_cols,omitempty"`
+}
+
+type ObsConnectionInfoV2 struct {
+	Host string `json:"host,omitempty"`
+	Port int    `json:"port,omitempty"`
 }

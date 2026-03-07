@@ -14,22 +14,7 @@ type IConn interface {
 	Close() error
 	AddMatchSignal(options ...dbus.MatchOption) error
 	Signal(ch chan<- *dbus.Signal)
-}
-
-type Conn struct {
-	conn *dbus.Conn
-}
-
-func (c *Conn) Close() error {
-	return c.conn.Close()
-}
-
-func (c *Conn) AddMatchSignal(options ...dbus.MatchOption) error {
-	return c.conn.AddMatchSignal(options...)
-}
-
-func (c *Conn) Signal(ch chan<- *dbus.Signal) {
-	c.conn.Signal(ch)
+	Object(dest string, path dbus.ObjectPath) dbus.BusObject
 }
 
 type Connection struct {
@@ -43,7 +28,7 @@ func Connect() (*Connection, error) {
 		return nil, err
 	}
 	return &Connection{
-		conn:   &Conn{conn: conn},
+		conn:   conn,
 		busobj: conn.Object("com.unixstreamdeck.streamdeckd", "/com/unixstreamdeck/streamdeckd"),
 	}, nil
 }
