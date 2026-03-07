@@ -1,6 +1,9 @@
 # github.com/bendahl/uinput v1.7.0
 ## explicit; go 1.13
 github.com/bendahl/uinput
+# github.com/davecgh/go-spew v1.1.1
+## explicit
+github.com/davecgh/go-spew/spew
 # github.com/fogleman/gg v1.3.0
 ## explicit
 github.com/fogleman/gg
@@ -11,17 +14,38 @@ github.com/godbus/dbus/v5
 ## explicit
 github.com/golang/freetype/raster
 github.com/golang/freetype/truetype
-# github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
+# github.com/pmezard/go-difflib v1.0.0
 ## explicit
-github.com/nfnt/resize
+github.com/pmezard/go-difflib/difflib
+# github.com/stretchr/testify v1.11.1
+## explicit; go 1.17
+github.com/stretchr/testify/assert
+github.com/stretchr/testify/assert/yaml
+# go.uber.org/mock v0.6.0
+## explicit; go 1.23.0
+go.uber.org/mock/gomock
 # golang.org/x/image v0.36.0
 ## explicit; go 1.24.0
 golang.org/x/image/draw
 golang.org/x/image/font
 golang.org/x/image/font/basicfont
+golang.org/x/image/font/gofont/gobold
+golang.org/x/image/font/gofont/gobolditalic
+golang.org/x/image/font/gofont/goitalic
+golang.org/x/image/font/gofont/gomedium
+golang.org/x/image/font/gofont/gomediumitalic
+golang.org/x/image/font/gofont/gomono
+golang.org/x/image/font/gofont/gomonobold
+golang.org/x/image/font/gofont/gomonobolditalic
+golang.org/x/image/font/gofont/gomonoitalic
 golang.org/x/image/font/gofont/goregular
+golang.org/x/image/font/gofont/gosmallcaps
+golang.org/x/image/font/gofont/gosmallcapsitalic
 golang.org/x/image/math/f64
 golang.org/x/image/math/fixed
 # golang.org/x/sys v0.41.0
 ## explicit; go 1.24.0
 golang.org/x/sys/unix
+# gopkg.in/yaml.v3 v3.0.1
+## explicit
+gopkg.in/yaml.v3

@@ -27,6 +27,12 @@ jobs:
         env:
           GOOS: ${{ matrix.goos }}
           GOARCH: ${{ matrix.goarch }}
-        run: go build -o .
+        run: go build
+      - name: Test ${{ matrix.goos }} / ${{ matrix.GOARCH }}
+        if: ${{ env.GOOS == 'linux' && env.GOARCH == 'amd64' }}
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+        run: go test
 
 
