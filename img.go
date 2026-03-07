@@ -8,7 +8,7 @@ import (
 
 	"github.com/fogleman/gg"
 	"github.com/golang/freetype/truetype"
-	"github.com/nfnt/resize"
+	"golang.org/x/image/draw"
 	"golang.org/x/image/font"
 	"golang.org/x/image/font/gofont/gobold"
 	"golang.org/x/image/font/gofont/gobolditalic"
@@ -26,6 +26,7 @@ import (
 
 const BorderClearance = 10
 
+// TODO replace use of gg with native font.Drawer
 type VerticalAlignment string
 
 const (
@@ -48,7 +49,7 @@ type IContext interface {
 	WordWrap(text string, width float64) []string
 	DrawStringWrapped(s string, x, y, ax, ay, width, lineSpacing float64, align gg.Align)
 	Image() image.Image
-	MeasureMultilineString(text string, fontSize float64) (float64, float64)
+	MeasureMultilineString(text string, lineSpacing float64) (float64, float64)
 	Width() int
 	Height() int
 }
@@ -139,7 +140,7 @@ func calculateFontSize(f *truetype.Font, text string, img IContext) float64 {
 	face := truetype.NewFace(f, &truetype.Options{Size: fontSize})
 	defer face.Close()
 	img.SetFontFace(face)
-	textWidth, _ := img.MeasureMultilineString(text, fontSize)
+	textWidth, _ := img.MeasureMultilineString(text, 1.0)
 	fSize := fontSize
 	if textWidth >= float64(width-BorderClearance) {
 		oversizeRatio := float64(width-BorderClearance) / textWidth
@@ -167,9 +168,19 @@ func attemptFontSize(f *truetype.Font, text string, img IContext, fSize float64)
 }
 
 func ResizeImage(img image.Image, keySize int) image.Image {
-	return resize.Resize(uint(keySize), uint(keySize), img, resize.Lanczos3)
+
+	dst := image.NewRGBA(image.Rect(0, 0, keySize, keySize))
+
+	draw.BiLinear.Scale(dst, dst.Rect, img, img.Bounds(), draw.Over, nil)
+
+	return dst
 }
 
 func ResizeImageWH(img image.Image, width int, height int) image.Image {
-	return resize.Resize(uint(width), uint(height), img, resize.Lanczos3)
+
+	dst := image.NewRGBA(image.Rect(0, 0, width, height))
+
+	draw.BiLinear.Scale(dst, dst.Rect, img, img.Bounds(), draw.Over, nil)
+
+	return dst
 }

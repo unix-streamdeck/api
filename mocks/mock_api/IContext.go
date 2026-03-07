@@ -92,9 +92,9 @@ func (m *MockIContext) MeasureMultilineString(text string, fontSize float64) (fl
 }
 
 // MeasureMultilineString indicates an expected call of MeasureMultilineString.
-func (mr *MockIContextMockRecorder) MeasureMultilineString(text, fontSize any) *gomock.Call {
+func (mr *MockIContextMockRecorder) MeasureMultilineString(text, lineSpacing any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MeasureMultilineString", reflect.TypeOf((*MockIContext)(nil).MeasureMultilineString), text, fontSize)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MeasureMultilineString", reflect.TypeOf((*MockIContext)(nil).MeasureMultilineString), text, lineSpacing)
 }
 
 // SetFontFace mocks base method.

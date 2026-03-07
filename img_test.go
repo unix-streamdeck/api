@@ -27,7 +27,7 @@ func TestDrawText(t *testing.T) {
 
 	context.EXPECT().SetFontFace(gomock.Any()).Times(2)
 
-	context.EXPECT().MeasureMultilineString("Test", 24.0).Return(20.0, 24.0).Times(1)
+	context.EXPECT().MeasureMultilineString("Test", 1.0).Return(20.0, 24.0).Times(1)
 
 	context.EXPECT().WordWrap("Test", 62.0).Return([]string{"Test"}).Times(1)
 
