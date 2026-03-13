@@ -5,6 +5,12 @@ import (
 	"time"
 )
 
+type Backgrounder interface {
+	GetTouchPanelBackground() string
+	GetTouchPanelBackgroundBuff() image.Image
+	SetTouchPanelBackgroundBuff(img image.Image)
+}
+
 type ConfigV3 struct {
 	Modules           []string            `json:"modules,omitempty"`
 	Decks             []DeckV3            `json:"decks"`
@@ -18,11 +24,35 @@ type DeckV3 struct {
 	TouchPanelBackgroundBuff image.Image `json:"-"`
 }
 
+func (d *DeckV3) GetTouchPanelBackground() string {
+	return d.TouchPanelBackground
+}
+
+func (d *DeckV3) GetTouchPanelBackgroundBuff() image.Image {
+	return d.TouchPanelBackgroundBuff
+}
+
+func (d *DeckV3) SetTouchPanelBackgroundBuff(img image.Image) {
+	d.TouchPanelBackgroundBuff = img
+}
+
 type PageV3 struct {
 	Keys                     []KeyV3     `json:"keys"`
 	Knobs                    []KnobV3    `json:"knobs"`
 	TouchPanelBackground     string      `json:"touch_panel_background"`
 	TouchPanelBackgroundBuff image.Image `json:"-"`
+}
+
+func (p *PageV3) GetTouchPanelBackground() string {
+	return p.TouchPanelBackground
+}
+
+func (p *PageV3) GetTouchPanelBackgroundBuff() image.Image {
+	return p.TouchPanelBackgroundBuff
+}
+
+func (p *PageV3) SetTouchPanelBackgroundBuff(img image.Image) {
+	p.TouchPanelBackgroundBuff = img
 }
 
 type KeyV3 struct {
@@ -39,6 +69,18 @@ type KnobV3 struct {
 	ActiveApplication        string                   `json:"-"`
 	TouchPanelBackground     string                   `json:"touch_panel_background"`
 	TouchPanelBackgroundBuff image.Image              `json:"-"`
+}
+
+func (k *KnobV3) GetTouchPanelBackground() string {
+	return k.TouchPanelBackground
+}
+
+func (k *KnobV3) GetTouchPanelBackgroundBuff() image.Image {
+	return k.TouchPanelBackgroundBuff
+}
+
+func (k *KnobV3) SetTouchPanelBackgroundBuff(img image.Image) {
+	k.TouchPanelBackgroundBuff = img
 }
 
 type KeyConfigV3 struct {
@@ -88,6 +130,18 @@ type KnobConfigV3 struct {
 	SharedState              map[string]any     `json:"-"`
 	TouchPanelBackground     string             `json:"touch_panel_background"`
 	TouchPanelBackgroundBuff image.Image        `json:"-"`
+}
+
+func (kc *KnobConfigV3) GetTouchPanelBackground() string {
+	return kc.TouchPanelBackground
+}
+
+func (kc *KnobConfigV3) GetTouchPanelBackgroundBuff() image.Image {
+	return kc.TouchPanelBackgroundBuff
+}
+
+func (kc *KnobConfigV3) SetTouchPanelBackgroundBuff(img image.Image) {
+	kc.TouchPanelBackgroundBuff = img
 }
 
 type KnobActionV3 struct {
