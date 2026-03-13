@@ -12,13 +12,17 @@ type ConfigV3 struct {
 }
 
 type DeckV3 struct {
-	Serial string   `json:"serial"`
-	Pages  []PageV3 `json:"pages"`
+	Serial                   string      `json:"serial"`
+	Pages                    []PageV3    `json:"pages"`
+	TouchPanelBackground     string      `json:"touch_panel_background"`
+	TouchPanelBackgroundBuff image.Image `json:"-"`
 }
 
 type PageV3 struct {
-	Keys  []KeyV3  `json:"keys"`
-	Knobs []KnobV3 `json:"knobs"`
+	Keys                     []KeyV3     `json:"keys"`
+	Knobs                    []KnobV3    `json:"knobs"`
+	TouchPanelBackground     string      `json:"touch_panel_background"`
+	TouchPanelBackgroundBuff image.Image `json:"-"`
 }
 
 type KeyV3 struct {
@@ -30,9 +34,11 @@ type KeyV3 struct {
 }
 
 type KnobV3 struct {
-	Application       map[string]*KnobConfigV3 `json:"application,omitempty"`
-	ActiveBuff        image.Image              `json:"-"`
-	ActiveApplication string                   `json:"-"`
+	Application              map[string]*KnobConfigV3 `json:"application,omitempty"`
+	ActiveBuff               image.Image              `json:"-"`
+	ActiveApplication        string                   `json:"-"`
+	TouchPanelBackground     string                   `json:"touch_panel_background"`
+	TouchPanelBackgroundBuff image.Image              `json:"-"`
 }
 
 type KeyConfigV3 struct {
@@ -80,6 +86,8 @@ type KnobConfigV3 struct {
 	KnobTurnUpAction         KnobActionV3       `json:"knob_turn_up_action,omitempty"`
 	KnobTurnDownAction       KnobActionV3       `json:"knob_turn_down_action,omitempty"`
 	SharedState              map[string]any     `json:"-"`
+	TouchPanelBackground     string             `json:"touch_panel_background"`
+	TouchPanelBackgroundBuff image.Image        `json:"-"`
 }
 
 type KnobActionV3 struct {

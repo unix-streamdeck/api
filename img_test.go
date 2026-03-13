@@ -6,10 +6,10 @@ import (
 	"math/rand"
 	"testing"
 
-	"github.com/fogleman/gg"
 	"github.com/golang/freetype/truetype"
 	"github.com/stretchr/testify/assert"
 	"github.com/unix-streamdeck/api/v2/mocks/mock_api"
+	"github.com/unix-streamdeck/gg"
 	"go.uber.org/mock/gomock"
 	"golang.org/x/image/font/gofont/goregular"
 )

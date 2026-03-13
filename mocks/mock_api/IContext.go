@@ -13,7 +13,7 @@ import (
 	image "image"
 	reflect "reflect"
 
-	gg "github.com/fogleman/gg"
+	gg "github.com/unix-streamdeck/gg"
 	gomock "go.uber.org/mock/gomock"
 	font "golang.org/x/image/font"
 )
