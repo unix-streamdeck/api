@@ -188,7 +188,7 @@ func TestGetModules(t *testing.T) {
 	modules := []*Module{
 		{
 			Name: "Example1",
-			IconFields: []Field{
+			ForegroundFields: []Field{
 				{
 					Title:     "File",
 					Name:      "file",
@@ -196,20 +196,16 @@ func TestGetModules(t *testing.T) {
 					FileTypes: []string{"*.gif"},
 				},
 			},
-			KeyFields: []Field{
+			InputFields: []Field{
 				{
 					Title: "Something",
 					Name:  "something",
 					Type:  Text,
 				},
 			},
-			LcdFields:         nil,
-			KnobOrTouchFields: nil,
-			LinkedFields:      nil,
-			IsIcon:            true,
-			IsKey:             true,
-			IsLcd:             false,
-			IsKnob:            false,
+			LinkedFields: nil,
+			IsForeground: true,
+			IsInput:      true,
 		},
 	}
 
