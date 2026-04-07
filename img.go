@@ -31,7 +31,6 @@ import (
 
 const BorderClearance = 10
 
-// TODO replace use of gg with native font.Drawer
 type VerticalAlignment string
 
 const (
@@ -62,6 +61,8 @@ type DrawTextOptions struct {
 	FontFace            string
 	Colour              string
 	Overflow            Overflow
+	// With anchor set, the alignments indicate the position of the text the anchor will be in, e.g BOTTOM & RIGHT will put the anchor in the bottom right of the text, so all text will be up and left of it
+	Anchor *image.Point
 }
 
 type IContext interface {
@@ -88,7 +89,21 @@ func DrawText(img image.Image, text string, options DrawTextOptions) (image.Imag
 		return img, errors.New("cannot convert")
 	}
 
-	width, height := img.Bounds().Max.X, img.Bounds().Max.Y
+	width, height := img.Bounds().Dx(), img.Bounds().Dy()
+
+	availableWidth, availableHeight := width, height
+
+	if options.Anchor != nil {
+		availableWidth, availableHeight = width-options.Anchor.X, height-options.Anchor.Y
+
+		if options.VerticalAlignment == Center {
+			availableHeight = height - options.Anchor.Y
+		}
+
+		if options.HorizontalAlignment == Middle {
+			availableWidth = width - options.Anchor.X
+		}
+	}
 
 	col := color.RGBA{0xff, 0xff, 0xff, 0xff}
 
@@ -101,7 +116,7 @@ func DrawText(img image.Image, text string, options DrawTextOptions) (image.Imag
 	if err != nil {
 		return nil, err
 	}
-	fSize := calculateFontSize(f, text, img, options.Overflow)
+	fSize := calculateFontSize(f, text, availableWidth, availableHeight, options.Overflow)
 
 	if options.FontSize != 0 {
 		fSize = float64(options.FontSize)
@@ -113,22 +128,30 @@ func DrawText(img image.Image, text string, options DrawTextOptions) (image.Imag
 	lines := text
 
 	if options.Overflow == Wrap {
-		lines = wrapString(text, width, face)
+		lines = wrapString(text, availableWidth, face)
 	}
 
 	lineCount := strings.Count(lines, "\n") + 1
 
-	_, y := calculateVerticalAlignment(options.VerticalAlignment, height, lineCount, fSize)
+	var y float64
+
+	var x int
+
+	w, _ := getTextBounds(lines, face)
+
+	if options.Anchor != nil {
+		x = calculateHorizonalAlignment(options.HorizontalAlignment, int(w), options.Anchor.X, true)
+		y = calculateVerticalAlignment(options.VerticalAlignment, options.Anchor.Y, lineCount, fSize, true)
+	} else {
+		x = calculateHorizonalAlignment(options.HorizontalAlignment, int(w), width, false)
+		y = calculateVerticalAlignment(options.VerticalAlignment, height, lineCount, fSize, false)
+	}
 
 	d := &font.Drawer{
 		Dst:  drawImg,
 		Src:  image.NewUniform(col),
 		Face: face,
 	}
-
-	w, _ := getTextBounds(lines, face)
-
-	x := calculateHorizonalAlignment(options.HorizontalAlignment, int(w), width)
 
 	d.Dot = fixed.Point26_6{
 		X: fixed.I(x),
@@ -150,8 +173,15 @@ func DrawText(img image.Image, text string, options DrawTextOptions) (image.Imag
 
 	for i, line := range linesSplit {
 		w, _ := getTextBounds(line, face)
+
+		if options.Anchor != nil {
+			x = calculateHorizonalAlignment(options.HorizontalAlignment, int(w), options.Anchor.X, true)
+		} else {
+			x = calculateHorizonalAlignment(options.HorizontalAlignment, int(w), width, false)
+		}
+
 		d.Dot = fixed.Point26_6{
-			X: fixed.I(calculateHorizonalAlignment(options.HorizontalAlignment, int(w), width)),
+			X: fixed.I(x),
 			Y: fixed.I(int(startingLineY + (float64(i) * fSize))),
 		}
 		d.DrawString(line)
@@ -191,29 +221,50 @@ func loadFontFace(fontName string) []byte {
 	}
 }
 
-func calculateVerticalAlignment(alignment VerticalAlignment, height, lines int, fSize float64) (float64, float64) {
+func calculateVerticalAlignment(alignment VerticalAlignment, height, lines int, fSize float64, anchor bool) float64 {
 	textMidPoint := (float64(lines) / 2.0) * fSize
+	if !anchor {
+		if alignment == Top {
+			return (BorderClearance / 2) + (textMidPoint)
+		}
+		if alignment == Bottom {
+			return float64(height) - (BorderClearance / 2) - textMidPoint
+		}
+		return float64(height) / 2
+	}
+
 	if alignment == Top {
-		return 0.0, (BorderClearance / 2) + (textMidPoint)
+		return float64(height) + textMidPoint
 	}
 	if alignment == Bottom {
-		return 1.0, float64(height) - (BorderClearance / 2) - textMidPoint
+		return float64(height) - textMidPoint
 	}
-	return 0.5, float64(height) / 2
+	return float64(height)
 }
 
-func calculateHorizonalAlignment(alignment HorizontalAlignment, textWidth, width int) int {
+func calculateHorizonalAlignment(alignment HorizontalAlignment, textWidth, width int, anchor bool) int {
+	if !anchor {
+		if alignment == Left {
+			return BorderClearance / 2
+		}
+		if alignment == Right {
+			return width - (BorderClearance / 2) - textWidth
+		}
+		return ((width) / 2) - (int(textWidth) / 2)
+	}
+
 	if alignment == Left {
-		return BorderClearance / 2
+		return width
 	}
+
 	if alignment == Right {
-		return width - (BorderClearance / 2) - textWidth
+		return width - textWidth
 	}
-	return ((width) / 2) - (int(textWidth) / 2)
+
+	return width - (textWidth / 2)
 }
 
-func calculateFontSize(f *truetype.Font, text string, img image.Image, overflow Overflow) float64 {
-	width := img.Bounds().Dx()
+func calculateFontSize(f *truetype.Font, text string, width, height int, overflow Overflow) float64 {
 	fontSize := float64(width) / 3
 	face := truetype.NewFace(f, &truetype.Options{Size: fontSize})
 	defer face.Close()
@@ -223,7 +274,7 @@ func calculateFontSize(f *truetype.Font, text string, img image.Image, overflow 
 		oversizeRatio := float64(width-BorderClearance) / w
 		scaledFontSize := math.Min(oversizeRatio*fontSize, 12)
 		for size := fontSize; size >= scaledFontSize; size -= 0.5 {
-			if attemptFontSize(f, text, img, size, overflow) {
+			if attemptFontSize(f, text, width, height, size, overflow) {
 				return size
 			}
 		}
@@ -232,9 +283,7 @@ func calculateFontSize(f *truetype.Font, text string, img image.Image, overflow 
 	return fSize
 }
 
-func attemptFontSize(f *truetype.Font, text string, img image.Image, fSize float64, overflow Overflow) bool {
-	width := img.Bounds().Dx()
-	height := img.Bounds().Dy()
+func attemptFontSize(f *truetype.Font, text string, width, height int, fSize float64, overflow Overflow) bool {
 	face := truetype.NewFace(f, &truetype.Options{Size: fSize})
 	defer face.Close()
 	w, h := getTextBounds(text, face)
@@ -317,16 +366,9 @@ func DrawProgressBar(img image.Image, label string, x, y, h, w, progress float64
 }
 
 func DrawProgressBarWithAccent(img image.Image, label string, x, y, h, w, progress float64, hex string) (image.Image, error) {
+	var err error
+
 	ggImg := gg.NewContextForImage(img)
-
-	f, err := truetype.Parse(goregular.TTF)
-
-	if err != nil {
-		return nil, err
-	}
-
-	face := truetype.NewFace(f, &truetype.Options{Size: h / 2})
-	defer face.Close()
 
 	ggImg.SetFillRule(gg.FillRuleEvenOdd)
 
@@ -344,9 +386,19 @@ func DrawProgressBarWithAccent(img image.Image, label string, x, y, h, w, progre
 
 	ggImg.SetHexColor("#FFFFFF")
 
-	ggImg.DrawStringAnchored(label, (x+w)/2, y+(h/2), 0.5, 0.5)
+	img = ggImg.Image()
 
-	return ggImg.Image(), nil
+	if label != "" {
+		img, err = DrawText(img, label, DrawTextOptions{
+			Anchor: &image.Point{
+				X: int(x) + int(w/2),
+				Y: int(y) + int((h/2)*1.2),
+			},
+			FontSize: int64(math.Max(h/2, h-5)),
+		})
+	}
+
+	return img, err
 }
 
 func HexColor(hex string) color.RGBA {

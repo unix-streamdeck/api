@@ -28,22 +28,19 @@ import (
 
 func Test_calculateVerticalAlignment_Center(t *testing.T) {
 	assertions := assert.New(t)
-	alignment, anchor := calculateVerticalAlignment(Center, 80, 1, 15)
-	assertions.Equal(0.5, alignment)
+	anchor := calculateVerticalAlignment(Center, 80, 1, 15, false)
 	assertions.Equal(40.0, anchor)
 }
 
 func Test_calculateVerticalAlignment_Top(t *testing.T) {
 	assertions := assert.New(t)
-	alignment, anchor := calculateVerticalAlignment(Top, 80, 1, 15)
-	assertions.Equal(0.0, alignment)
+	anchor := calculateVerticalAlignment(Top, 80, 1, 15, false)
 	assertions.Equal(12.5, anchor)
 }
 
 func Test_calculateVerticalAlignment_Bottom(t *testing.T) {
 	assertions := assert.New(t)
-	alignment, anchor := calculateVerticalAlignment(Bottom, 80, 1, 15)
-	assertions.Equal(1.0, alignment)
+	anchor := calculateVerticalAlignment(Bottom, 80, 1, 15, false)
 	assertions.Equal(67.5, anchor)
 }
 
@@ -53,7 +50,7 @@ func Test_calculateFontSize_SingleWord(t *testing.T) {
 	ggImg := gg.NewContextForImage(img)
 	ggImg.SetHexColor("#FFF")
 	f, _ := truetype.Parse(goregular.TTF)
-	assertions.Equal(24.0, calculateFontSize(f, "Test", img, Wrap))
+	assertions.Equal(24.0, calculateFontSize(f, "Test", 72, 72, Wrap))
 }
 
 func Test_calculateFontSize_MultiLine(t *testing.T) {
@@ -62,7 +59,7 @@ func Test_calculateFontSize_MultiLine(t *testing.T) {
 	ggImg := gg.NewContextForImage(img)
 	ggImg.SetHexColor("#FFF")
 	f, _ := truetype.Parse(goregular.TTF)
-	assertions.Equal(24.0, calculateFontSize(f, "Lines Test", img, Wrap))
+	assertions.Equal(24.0, calculateFontSize(f, "Lines Test", 72, 72, Wrap))
 }
 
 func Test_calculateFontSize_LongMultiLine(t *testing.T) {
@@ -71,7 +68,7 @@ func Test_calculateFontSize_LongMultiLine(t *testing.T) {
 	ggImg := gg.NewContextForImage(img)
 	ggImg.SetHexColor("#FFF")
 	f, _ := truetype.Parse(goregular.TTF)
-	assertions.Equal(15.5, calculateFontSize(f, "Multiline Overflow", img, Wrap))
+	assertions.Equal(15.5, calculateFontSize(f, "Multiline Overflow", 72, 72, Wrap))
 }
 
 func Test_attemptFontSize_SingleLine(t *testing.T) {
@@ -80,7 +77,7 @@ func Test_attemptFontSize_SingleLine(t *testing.T) {
 	ggImg := gg.NewContextForImage(img)
 	ggImg.SetHexColor("#FFF")
 	f, _ := truetype.Parse(goregular.TTF)
-	assertions.True(attemptFontSize(f, "Test", img, 24.0, Wrap))
+	assertions.True(attemptFontSize(f, "Test", 72, 72, 24.0, Wrap))
 }
 
 func Test_attemptFontSize_MultiLine(t *testing.T) {
@@ -89,7 +86,7 @@ func Test_attemptFontSize_MultiLine(t *testing.T) {
 	ggImg := gg.NewContextForImage(img)
 	ggImg.SetHexColor("#FFF")
 	f, _ := truetype.Parse(goregular.TTF)
-	assertions.True(attemptFontSize(f, "Lines Test", img, 24.0, Wrap))
+	assertions.True(attemptFontSize(f, "Lines Test", 72, 72, 24.0, Wrap))
 }
 
 func Test_attemptFontSize_Overflow(t *testing.T) {
@@ -98,7 +95,7 @@ func Test_attemptFontSize_Overflow(t *testing.T) {
 	ggImg := gg.NewContextForImage(img)
 	ggImg.SetHexColor("#FFF")
 	f, _ := truetype.Parse(goregular.TTF)
-	assertions.False(attemptFontSize(f, "Muiltiline Overflow", img, 24.0, Wrap))
+	assertions.False(attemptFontSize(f, "Muiltiline Overflow", 72, 72, 24.0, Wrap))
 }
 
 func TestResizeImage(t *testing.T) {
@@ -232,6 +229,29 @@ func TestDrawText(t *testing.T) {
 			expected, _, err := image.Decode(f)
 			assertions.Equal(expected, img2)
 		})
+	}
+}
+
+func TestDrawText_Anchor(t *testing.T) {
+	for _, valign := range []VerticalAlignment{Top, Center, Bottom} {
+		for _, halign := range []HorizontalAlignment{Left, Middle, Right} {
+			t.Run(string(valign)+"-"+string(halign), func(t *testing.T) {
+				assertions := assert.New(t)
+				img := image.NewRGBA(image.Rect(0, 0, 72, 72))
+				draw.Draw(img, img.Bounds(), image.Black, image.ZP, draw.Src)
+				actual, _ := DrawText(img, "Hi", DrawTextOptions{
+					FontSize:            15,
+					Anchor:              &image.Point{X: 20, Y: 20},
+					Overflow:            Fade,
+					VerticalAlignment:   valign,
+					HorizontalAlignment: halign,
+				})
+				f, _ := os.Open("test_resources/anchor/" + string(halign) + "-" + string(valign) + ".png")
+				defer f.Close()
+				expected, _, _ := image.Decode(f)
+				assertions.Equal(expected, actual)
+			})
+		}
 	}
 }
 
