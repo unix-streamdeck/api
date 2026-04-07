@@ -6,13 +6,12 @@ import (
 	"image/draw"
 	"log"
 	"math/rand"
+	"os"
 	"testing"
 
 	"github.com/golang/freetype/truetype"
 	"github.com/stretchr/testify/assert"
-	"github.com/unix-streamdeck/api/v2/mocks/mock_api"
 	"github.com/unix-streamdeck/gg"
-	"go.uber.org/mock/gomock"
 	"golang.org/x/image/font/gofont/gobold"
 	"golang.org/x/image/font/gofont/gobolditalic"
 	"golang.org/x/image/font/gofont/goitalic"
@@ -27,56 +26,22 @@ import (
 	"golang.org/x/image/font/gofont/gosmallcapsitalic"
 )
 
-func TestDrawText(t *testing.T) {
-	assertions := assert.New(t)
-	ctrl := gomock.NewController(t)
-
-	context := mock_api.NewMockIContext(ctrl)
-
-	context.EXPECT().SetRGB(1.0, 1.0, 1.0).Times(1)
-
-	context.EXPECT().Width().Return(72).Times(2)
-	context.EXPECT().Height().Return(72).Times(1)
-
-	context.EXPECT().SetFontFace(gomock.Any()).Times(2)
-
-	context.EXPECT().MeasureMultilineString("Test", 1.0).Return(20.0, 24.0).Times(1)
-
-	context.EXPECT().WordWrap("Test", 62.0).Return([]string{"Test"}).Times(1)
-
-	context.EXPECT().DrawStringWrapped("Test", 36.0, 36.0, 0.5, 0.5, 62.0, 1.0, gg.AlignCenter)
-
-	mockImg := setupImage(72, 72)
-
-	context.EXPECT().Image().Return(mockImg).Times(1)
-
-	img, err := drawText(context, "Test", DrawTextOptions{})
-
-	assertions.Equal(mockImg, img)
-
-	assertions.Nil(err)
-
-}
-
 func Test_calculateVerticalAlignment_Center(t *testing.T) {
 	assertions := assert.New(t)
-	alignment, anchor := calculateVerticalAlignment(Center, 80)
-	assertions.Equal(0.5, alignment)
+	anchor := calculateVerticalAlignment(Center, 80, 1, 15, false)
 	assertions.Equal(40.0, anchor)
 }
 
 func Test_calculateVerticalAlignment_Top(t *testing.T) {
 	assertions := assert.New(t)
-	alignment, anchor := calculateVerticalAlignment(Top, 80)
-	assertions.Equal(0.0, alignment)
-	assertions.Equal(5.0, anchor)
+	anchor := calculateVerticalAlignment(Top, 80, 1, 15, false)
+	assertions.Equal(12.5, anchor)
 }
 
 func Test_calculateVerticalAlignment_Bottom(t *testing.T) {
 	assertions := assert.New(t)
-	alignment, anchor := calculateVerticalAlignment(Bottom, 80)
-	assertions.Equal(1.0, alignment)
-	assertions.Equal(75.0, anchor)
+	anchor := calculateVerticalAlignment(Bottom, 80, 1, 15, false)
+	assertions.Equal(67.5, anchor)
 }
 
 func Test_calculateFontSize_SingleWord(t *testing.T) {
@@ -85,7 +50,7 @@ func Test_calculateFontSize_SingleWord(t *testing.T) {
 	ggImg := gg.NewContextForImage(img)
 	ggImg.SetHexColor("#FFF")
 	f, _ := truetype.Parse(goregular.TTF)
-	assertions.Equal(24.0, calculateFontSize(f, "Test", ggImg))
+	assertions.Equal(24.0, calculateFontSize(f, "Test", 72, 72, Wrap))
 }
 
 func Test_calculateFontSize_MultiLine(t *testing.T) {
@@ -94,7 +59,7 @@ func Test_calculateFontSize_MultiLine(t *testing.T) {
 	ggImg := gg.NewContextForImage(img)
 	ggImg.SetHexColor("#FFF")
 	f, _ := truetype.Parse(goregular.TTF)
-	assertions.Equal(24.0, calculateFontSize(f, "Lines Test", ggImg))
+	assertions.Equal(24.0, calculateFontSize(f, "Lines Test", 72, 72, Wrap))
 }
 
 func Test_calculateFontSize_LongMultiLine(t *testing.T) {
@@ -103,7 +68,7 @@ func Test_calculateFontSize_LongMultiLine(t *testing.T) {
 	ggImg := gg.NewContextForImage(img)
 	ggImg.SetHexColor("#FFF")
 	f, _ := truetype.Parse(goregular.TTF)
-	assertions.Equal(15.5, calculateFontSize(f, "Multiline Overflow", ggImg))
+	assertions.Equal(15.5, calculateFontSize(f, "Multiline Overflow", 72, 72, Wrap))
 }
 
 func Test_attemptFontSize_SingleLine(t *testing.T) {
@@ -112,7 +77,7 @@ func Test_attemptFontSize_SingleLine(t *testing.T) {
 	ggImg := gg.NewContextForImage(img)
 	ggImg.SetHexColor("#FFF")
 	f, _ := truetype.Parse(goregular.TTF)
-	assertions.True(attemptFontSize(f, "Test", ggImg, 24.0))
+	assertions.True(attemptFontSize(f, "Test", 72, 72, 24.0, Wrap))
 }
 
 func Test_attemptFontSize_MultiLine(t *testing.T) {
@@ -121,7 +86,7 @@ func Test_attemptFontSize_MultiLine(t *testing.T) {
 	ggImg := gg.NewContextForImage(img)
 	ggImg.SetHexColor("#FFF")
 	f, _ := truetype.Parse(goregular.TTF)
-	assertions.True(attemptFontSize(f, "Lines Test", ggImg, 24.0))
+	assertions.True(attemptFontSize(f, "Lines Test", 72, 72, 24.0, Wrap))
 }
 
 func Test_attemptFontSize_Overflow(t *testing.T) {
@@ -130,7 +95,7 @@ func Test_attemptFontSize_Overflow(t *testing.T) {
 	ggImg := gg.NewContextForImage(img)
 	ggImg.SetHexColor("#FFF")
 	f, _ := truetype.Parse(goregular.TTF)
-	assertions.False(attemptFontSize(f, "Muiltiline Overflow", ggImg, 24.0))
+	assertions.False(attemptFontSize(f, "Muiltiline Overflow", 72, 72, 24.0, Wrap))
 }
 
 func TestResizeImage(t *testing.T) {
@@ -156,92 +121,138 @@ func TestResizeImageWH(t *testing.T) {
 	assertions.Equal(resizedImage.Bounds().Max.Y, newHeight)
 }
 
-func TestDrawText_WithColor(t *testing.T) {
-	assertions := assert.New(t)
-	ctrl := gomock.NewController(t)
-
-	context := mock_api.NewMockIContext(ctrl)
-
-	context.EXPECT().SetRGB(1.0, 1.0, 1.0).Times(1)
-	context.EXPECT().SetHexColor("#FF0000").Times(1)
-
-	context.EXPECT().Width().Return(72).Times(2)
-	context.EXPECT().Height().Return(72).Times(1)
-
-	context.EXPECT().SetFontFace(gomock.Any()).Times(2)
-
-	context.EXPECT().MeasureMultilineString("Test", 1.0).Return(20.0, 24.0).Times(1)
-
-	context.EXPECT().WordWrap("Test", 62.0).Return([]string{"Test"}).Times(1)
-
-	context.EXPECT().DrawStringWrapped("Test", 36.0, 36.0, 0.5, 0.5, 62.0, 1.0, gg.AlignCenter)
-
-	mockImg := setupImage(72, 72)
-
-	context.EXPECT().Image().Return(mockImg).Times(1)
-
-	img, err := drawText(context, "Test", DrawTextOptions{Colour: "#FF0000"})
-
-	assertions.Equal(mockImg, img)
-	assertions.Nil(err)
+type TestParameters struct {
+	DrawTextOptions DrawTextOptions
+	ExpectedImage   string
+	Name            string
+	Text            string
 }
 
-func TestDrawText_WithFontSize(t *testing.T) {
-	assertions := assert.New(t)
-	ctrl := gomock.NewController(t)
+func TestDrawText(t *testing.T) {
+	params := []TestParameters{
+		{
+			Name:            "No Params",
+			ExpectedImage:   "normal.png",
+			Text:            "00:00:00",
+			DrawTextOptions: DrawTextOptions{},
+		},
+		{
+			Name:          "Colour",
+			ExpectedImage: "colour.png",
+			Text:          "00:00:00",
+			DrawTextOptions: DrawTextOptions{
+				Colour: "#CC3333",
+			},
+		},
+		{
+			Name:          "Face",
+			ExpectedImage: "face.png",
+			Text:          "Test",
+			DrawTextOptions: DrawTextOptions{
+				FontFace: "mono",
+			},
+		},
+		{
+			Name:          "Fade",
+			ExpectedImage: "fade.png",
+			Text:          "Test",
+			DrawTextOptions: DrawTextOptions{
+				Overflow: Fade,
+			},
+		},
+		{
+			Name:          "Left",
+			ExpectedImage: "left.png",
+			Text:          "Test",
+			DrawTextOptions: DrawTextOptions{
+				HorizontalAlignment: Left,
+			},
+		},
+		{
+			Name:          "Right",
+			ExpectedImage: "right.png",
+			Text:          "Test",
+			DrawTextOptions: DrawTextOptions{
+				HorizontalAlignment: Right,
+			},
+		},
+		{
+			Name:          "Size",
+			ExpectedImage: "size.png",
+			Text:          "00:00:00",
+			DrawTextOptions: DrawTextOptions{
+				FontSize: 12,
+			},
+		},
+		{
+			Name:          "Bottom",
+			ExpectedImage: "bottom.png",
+			Text:          "00:00:00",
+			DrawTextOptions: DrawTextOptions{
+				VerticalAlignment: Bottom,
+			},
+		},
+		{
+			Name:          "Top",
+			ExpectedImage: "top.png",
+			Text:          "00:00:00",
+			DrawTextOptions: DrawTextOptions{
+				VerticalAlignment: Top,
+			},
+		},
+		{
+			Name:          "Multiline Bottom",
+			ExpectedImage: "ml-bottom.png",
+			Text:          "00:0\n0:00",
+			DrawTextOptions: DrawTextOptions{
+				VerticalAlignment: Bottom,
+			},
+		},
+		{
+			Name:          "Multiline Top",
+			ExpectedImage: "ml-top.png",
+			Text:          "00:0\n0:00",
+			DrawTextOptions: DrawTextOptions{
+				VerticalAlignment: Top,
+			},
+		},
+	}
 
-	context := mock_api.NewMockIContext(ctrl)
-
-	context.EXPECT().SetRGB(1.0, 1.0, 1.0).Times(1)
-
-	context.EXPECT().Width().Return(72).Times(2)
-	context.EXPECT().Height().Return(72).Times(1)
-
-	context.EXPECT().SetFontFace(gomock.Any()).Times(2)
-
-	context.EXPECT().MeasureMultilineString("Test", 1.0).Return(25.0, 12.0).Times(1)
-
-	context.EXPECT().WordWrap("Test", 62.0).Return([]string{"Test"}).Times(1)
-
-	context.EXPECT().DrawStringWrapped("Test", 36.0, 36.0, 0.5, 0.5, 62.0, 1.0, gg.AlignCenter)
-
-	mockImg := setupImage(72, 72)
-
-	context.EXPECT().Image().Return(mockImg).Times(1)
-
-	img, err := drawText(context, "Test", DrawTextOptions{FontSize: 16})
-
-	assertions.Equal(mockImg, img)
-	assertions.Nil(err)
+	for _, param := range params {
+		t.Run(param.Name, func(t *testing.T) {
+			assertions := assert.New(t)
+			img := setupImage(72, 72)
+			img2, err := DrawText(img, param.Text, param.DrawTextOptions)
+			assertions.Nil(err)
+			f, err := os.Open("test_resources/" + param.ExpectedImage)
+			defer f.Close()
+			expected, _, err := image.Decode(f)
+			assertions.Equal(expected, img2)
+		})
+	}
 }
 
-func TestDrawText_WithNewlines(t *testing.T) {
-	assertions := assert.New(t)
-	ctrl := gomock.NewController(t)
-
-	context := mock_api.NewMockIContext(ctrl)
-
-	context.EXPECT().SetRGB(1.0, 1.0, 1.0).Times(1)
-
-	context.EXPECT().Width().Return(72).Times(2)
-	context.EXPECT().Height().Return(72).Times(1)
-
-	context.EXPECT().SetFontFace(gomock.Any()).Times(2)
-
-	context.EXPECT().MeasureMultilineString("Line1\nLine2", 1.0).Return(30.0, 48.0).Times(1)
-
-	context.EXPECT().WordWrap("Line1\nLine2", 62.0).Return([]string{"Line1", "Line2"}).Times(1)
-
-	context.EXPECT().DrawStringWrapped("Line1\nLine2", 36.0, 36.0, 0.5, 0.5, 62.0, 1.0, gg.AlignCenter)
-
-	mockImg := setupImage(72, 72)
-
-	context.EXPECT().Image().Return(mockImg).Times(1)
-
-	img, err := drawText(context, "Line1\nLine2", DrawTextOptions{})
-
-	assertions.Equal(mockImg, img)
-	assertions.Nil(err)
+func TestDrawText_Anchor(t *testing.T) {
+	for _, valign := range []VerticalAlignment{Top, Center, Bottom} {
+		for _, halign := range []HorizontalAlignment{Left, Middle, Right} {
+			t.Run(string(valign)+"-"+string(halign), func(t *testing.T) {
+				assertions := assert.New(t)
+				img := image.NewRGBA(image.Rect(0, 0, 72, 72))
+				draw.Draw(img, img.Bounds(), image.Black, image.ZP, draw.Src)
+				actual, _ := DrawText(img, "Hi", DrawTextOptions{
+					FontSize:            15,
+					Anchor:              &image.Point{X: 20, Y: 20},
+					Overflow:            Fade,
+					VerticalAlignment:   valign,
+					HorizontalAlignment: halign,
+				})
+				f, _ := os.Open("test_resources/anchor/" + string(halign) + "-" + string(valign) + ".png")
+				defer f.Close()
+				expected, _, _ := image.Decode(f)
+				assertions.Equal(expected, actual)
+			})
+		}
+	}
 }
 
 func Test_loadFontFace_Bold(t *testing.T) {
@@ -411,6 +422,7 @@ func TestSubImage(t *testing.T) {
 	assertions.Equal(50, result.Bounds().Max.X)
 	assertions.Equal(50, result.Bounds().Max.Y)
 }
+
 func setupImage(width int, height int) *image.RGBA {
 	img := image.NewRGBA(image.Rect(0, 0, width, height))
 	draw.Draw(img, img.Bounds(), image.Black, image.ZP, draw.Src)

@@ -9,7 +9,7 @@ require (
 	github.com/stretchr/testify v1.11.1
 	github.com/unix-streamdeck/gg v0.0.0-20260313120600-9d60d38ce9f9
 	go.uber.org/mock v0.6.0
-	golang.org/x/image v0.37.0
+	golang.org/x/image v0.38.0
 )
 
 require (
