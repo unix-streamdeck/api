@@ -1,4 +1,4 @@
-module github.com/unix-streamdeck/api/v2
+module github.com/unix-streamdeck/api/v3
 
 go 1.25.7
 

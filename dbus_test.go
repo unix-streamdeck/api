@@ -12,8 +12,8 @@ import (
 
 	"github.com/godbus/dbus/v5"
 	"github.com/stretchr/testify/assert"
-	"github.com/unix-streamdeck/api/v2/mocks/mock_api"
-	"github.com/unix-streamdeck/api/v2/mocks/mock_dbus"
+	"github.com/unix-streamdeck/api/v3/mocks/mock_api"
+	"github.com/unix-streamdeck/api/v3/mocks/mock_dbus"
 	"go.uber.org/mock/gomock"
 )
 
@@ -25,7 +25,7 @@ func TestGetInfo(t *testing.T) {
 
 	conn := Connection{busobj: busObject}
 
-	sdInfo := StreamDeckInfoV1{
+	sdInfo := StreamDeckInfo{
 		Cols:             8,
 		Rows:             4,
 		IconSize:         72,
@@ -41,7 +41,7 @@ func TestGetInfo(t *testing.T) {
 		KnobCols:         0,
 	}
 
-	sdInfoString, _ := json.Marshal([]StreamDeckInfoV1{sdInfo})
+	sdInfoString, _ := json.Marshal([]StreamDeckInfo{sdInfo})
 
 	call := dbus.Call{
 		Body: []any{string(sdInfoString)},
@@ -53,7 +53,7 @@ func TestGetInfo(t *testing.T) {
 
 	assertions.Nil(err)
 
-	assertions.Equal([]*StreamDeckInfoV1{&sdInfo}, actual)
+	assertions.Equal([]*StreamDeckInfo{&sdInfo}, actual)
 }
 
 func TestSetPage(t *testing.T) {
@@ -79,16 +79,16 @@ func TestGetConfig(t *testing.T) {
 
 	conn := Connection{busobj: busObject}
 
-	expectedConfig := ConfigV3{
+	expectedConfig := Config{
 		Modules: []string{
 			"/test/module.so",
 		},
-		Decks: []DeckV3{
+		Decks: []Deck{
 			{
 				Serial: "AABBCCDD",
-				Pages: []PageV3{
+				Pages: []Page{
 					{
-						Keys: []KeyV3{
+						Keys: []Key{
 							{},
 						},
 					},
@@ -120,16 +120,16 @@ func TestSetConfig(t *testing.T) {
 
 	conn := Connection{busobj: busObject}
 
-	expectedConfig := ConfigV3{
+	expectedConfig := Config{
 		Modules: []string{
 			"/test/module.so",
 		},
-		Decks: []DeckV3{
+		Decks: []Deck{
 			{
 				Serial: "AABBCCDD",
-				Pages: []PageV3{
+				Pages: []Page{
 					{
-						Keys: []KeyV3{
+						Keys: []Key{
 							{},
 						},
 					},
@@ -187,23 +187,7 @@ func TestGetModules(t *testing.T) {
 
 	modules := []*Module{
 		{
-			Name: "Example1",
-			ForegroundFields: []Field{
-				{
-					Title:     "File",
-					Name:      "file",
-					Type:      File,
-					FileTypes: []string{"*.gif"},
-				},
-			},
-			InputFields: []Field{
-				{
-					Title: "Something",
-					Name:  "something",
-					Type:  Text,
-				},
-			},
-			LinkedFields: nil,
+			Name:         "Example1",
 			IsForeground: true,
 			IsInput:      true,
 		},
@@ -277,7 +261,7 @@ func TestGetObsFields(t *testing.T) {
 	assertions.Equal(expectedFields, actualFields)
 }
 
-func TestGetHandlerExample(t *testing.T) {
+func TestGetLayersExample(t *testing.T) {
 	assertions := assert.New(t)
 	ctrl := gomock.NewController(t)
 
@@ -285,13 +269,9 @@ func TestGetHandlerExample(t *testing.T) {
 
 	conn := Connection{busobj: busObject}
 
-	keyConfig := KeyConfigV3{
-		Icon:       "/path/to/file.png",
-		Command:    "ls",
-		Brightness: 65,
-	}
+	layers := []*Layer{}
 
-	keyConfigString, _ := json.Marshal(keyConfig)
+	layersString, _ := json.Marshal(layers)
 
 	expectedImg := image.NewRGBA(image.Rect(0, 0, 72, 72))
 	draw.Draw(expectedImg, expectedImg.Bounds(), image.Black, image.ZP, draw.Src)
@@ -305,45 +285,9 @@ func TestGetHandlerExample(t *testing.T) {
 		Body: []any{pngString},
 	}
 
-	busObject.EXPECT().Call("com.unixstreamdeck.streamdeckd.GetHandlerExample", dbus.Flags(0), "AABBCCDD", string(keyConfigString)).Times(1).Return(call)
+	busObject.EXPECT().Call("com.unixstreamdeck.streamdeckd.GetLayersExample", dbus.Flags(0), "AABBCCDD", string(layersString), KEY).Times(1).Return(call)
 
-	actualImg, err := conn.GetHandlerExample("AABBCCDD", keyConfig)
-
-	assertions.Nil(err)
-
-	assertions.Equal(expectedImg, actualImg)
-}
-
-func TestGetKnobHandlerExample(t *testing.T) {
-	assertions := assert.New(t)
-	ctrl := gomock.NewController(t)
-
-	busObject := mock_dbus.NewMockBusObject(ctrl)
-
-	conn := Connection{busobj: busObject}
-
-	knobConfig := KnobConfigV3{
-		Icon:     "/path/to/file.png",
-		FontFace: "regular",
-	}
-
-	knobConfigString, _ := json.Marshal(knobConfig)
-
-	expectedImg := image.NewRGBA(image.Rect(0, 0, 72, 72))
-	draw.Draw(expectedImg, expectedImg.Bounds(), image.Black, image.ZP, draw.Src)
-
-	buf := new(bytes.Buffer)
-	png.Encode(buf, expectedImg)
-	imageBits := buf.Bytes()
-	pngString := "data:image/png;base64," + base64.StdEncoding.EncodeToString(imageBits)
-
-	call := &dbus.Call{
-		Body: []any{pngString},
-	}
-
-	busObject.EXPECT().Call("com.unixstreamdeck.streamdeckd.GetKnobHandlerExample", dbus.Flags(0), "AABBCCDD", string(knobConfigString)).Times(1).Return(call)
-
-	actualImg, err := conn.GetKnobHandlerExample("AABBCCDD", knobConfig)
+	actualImg, err := conn.GetLayersExample("AABBCCDD", layers, KEY)
 
 	assertions.Nil(err)
 
