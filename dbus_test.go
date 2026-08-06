@@ -185,11 +185,28 @@ func TestGetModules(t *testing.T) {
 
 	conn := Connection{busobj: busObject}
 
-	modules := []*Module{
-		{
-			Name:         "Example1",
-			IsForeground: true,
-			IsInput:      true,
+	modules := &AvailableModules{
+		GroupModules: []ModuleGroup{
+			{
+				Name:        "builtin",
+				DisplayName: "Built In",
+				Description: "Handlers shipped with the daemon",
+				Modules: []Module{
+					{
+						Name:         "Image",
+						DisplayName:  "Image",
+						IsForeground: true,
+						IsBackground: true,
+					},
+				},
+			},
+		},
+		IndividualModules: []Module{
+			{
+				Name:         "Example1",
+				IsForeground: true,
+				IsInput:      true,
+			},
 		},
 	}
 
@@ -220,6 +237,21 @@ func TestPressButton(t *testing.T) {
 	busObject.EXPECT().Call("com.unixstreamdeck.streamdeckd.PressButton", dbus.Flags(0), "AABBCCDD", 12).Times(1).Return(&dbus.Call{})
 
 	err := conn.PressButton("AABBCCDD", 12)
+
+	assertions.Nil(err)
+}
+
+func TestSendKnobEvent(t *testing.T) {
+	assertions := assert.New(t)
+	ctrl := gomock.NewController(t)
+
+	busObject := mock_dbus.NewMockBusObject(ctrl)
+
+	conn := Connection{busobj: busObject}
+
+	busObject.EXPECT().Call("com.unixstreamdeck.streamdeckd.SendKnobEvent", dbus.Flags(0), "AABBCCDD", 2, int(KNOB_CW)).Times(1).Return(&dbus.Call{})
+
+	err := conn.SendKnobEvent("AABBCCDD", 2, KNOB_CW)
 
 	assertions.Nil(err)
 }
@@ -292,6 +324,73 @@ func TestGetLayersExample(t *testing.T) {
 	assertions.Nil(err)
 
 	assertions.Equal(expectedImg, actualImg)
+}
+
+func TestGetBackgroundExample(t *testing.T) {
+	assertions := assert.New(t)
+	ctrl := gomock.NewController(t)
+
+	busObject := mock_dbus.NewMockBusObject(ctrl)
+
+	conn := Connection{busobj: busObject}
+
+	fields := map[string]any{"file": "/tmp/example.png"}
+	fieldsString, _ := json.Marshal(fields)
+
+	expectedImg := image.NewRGBA(image.Rect(0, 0, 72, 72))
+	draw.Draw(expectedImg, expectedImg.Bounds(), image.Black, image.ZP, draw.Src)
+
+	buf := new(bytes.Buffer)
+	png.Encode(buf, expectedImg)
+	pngString := "data:image/png;base64," + base64.StdEncoding.EncodeToString(buf.Bytes())
+
+	payload, _ := json.Marshal([]string{pngString})
+
+	call := &dbus.Call{
+		Body: []any{string(payload)},
+	}
+
+	busObject.EXPECT().Call("com.unixstreamdeck.streamdeckd.GetBackgroundExample", dbus.Flags(0), "AABBCCDD", "builtin.Image", string(fieldsString), KEY, false).Times(1).Return(call)
+
+	actual, err := conn.GetBackgroundExample("AABBCCDD", "builtin.Image", fields, KEY, false)
+
+	assertions.Nil(err)
+
+	assertions.Equal([]image.Image{expectedImg}, actual)
+}
+
+func TestGetBackgroundExampleGrid(t *testing.T) {
+	assertions := assert.New(t)
+	ctrl := gomock.NewController(t)
+
+	busObject := mock_dbus.NewMockBusObject(ctrl)
+
+	conn := Connection{busobj: busObject}
+
+	fields := map[string]any{}
+	fieldsString, _ := json.Marshal(fields)
+
+	expectedImg := image.NewRGBA(image.Rect(0, 0, 72, 72))
+	draw.Draw(expectedImg, expectedImg.Bounds(), image.Black, image.ZP, draw.Src)
+
+	buf := new(bytes.Buffer)
+	png.Encode(buf, expectedImg)
+	pngString := "data:image/png;base64," + base64.StdEncoding.EncodeToString(buf.Bytes())
+
+	payload, _ := json.Marshal([]string{pngString, pngString, pngString})
+
+	call := &dbus.Call{
+		Body: []any{string(payload)},
+	}
+
+	busObject.EXPECT().Call("com.unixstreamdeck.streamdeckd.GetBackgroundExample", dbus.Flags(0), "AABBCCDD", "builtin.Image", string(fieldsString), KEY, true).Times(1).Return(call)
+
+	actual, err := conn.GetBackgroundExample("AABBCCDD", "builtin.Image", fields, KEY, true)
+
+	assertions.Nil(err)
+
+	assertions.Len(actual, 3)
+	assertions.Equal([]image.Image{expectedImg, expectedImg, expectedImg}, actual)
 }
 
 func TestRegisterPageListener(t *testing.T) {
